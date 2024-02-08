@@ -98,5 +98,16 @@ namespace ChessNotationConverter.Models
 
             return newBoard;
         } 
+
+        internal string Serialize(bool trailingComma = true)
+        {
+            var sb = new StringBuilder();
+            foreach (var pieceVal in Matrix)
+            {
+                sb.Append(pieceVal + ",");
+            }
+
+            return trailingComma ? sb.ToString() : sb.ToString().TrimEnd(',');
+        }
     }
 }

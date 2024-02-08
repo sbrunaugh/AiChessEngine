@@ -64,19 +64,5 @@
             //Console.Clear();
             //Console.WriteLine("Finished parsing game.");
         }
-
-        internal double GetOutcomeForPositionIndex(int index)
-        {
-            if(Outcome == 0)
-            {
-                return 0.0;
-            } 
-
-            var absoluteVal = (double)index / (double)MoveCount;
-
-            return Outcome == 1
-                ? absoluteVal
-                : -absoluteVal;
-        }
     }
 }

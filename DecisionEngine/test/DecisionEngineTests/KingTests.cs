@@ -1,46 +1,21 @@
-using DecisionEngine;
+﻿using DecisionEngine;
 using DecisionEngine.Helpers;
 
 namespace DecisionEngineTests
 {
     [TestClass]
-    public class PawnTests
+    public class KingTests
     {
         [TestMethod]
         [DataRow(Player.White)]
         [DataRow(Player.Black)]
-        public void BeginningPawnMovesTest(Player player)
+        public void StartingPositionTest(Player player)
         {
             // Arrange
             var board = BoardHelper.GenerateFreshBoard();
 
             // Act
-            var potentialNewPositions = PawnHelper.FindAllLegalMoves(board, player);
-
-            // Assert
-            Assert.AreEqual(16, potentialNewPositions.Count);
-        }
-
-        [TestMethod]
-        [DataRow(Player.White)]
-        [DataRow(Player.Black)]
-        public void NoPawnMovesTest(Player player)
-        {
-            // Arrange
-            var board = new int[8, 8]
-            {
-                {  5, 2, 3, 8, 9, 3, 2, 5 },
-                {  0, 0, 0, 0, 0, 0, 0, 0 },
-                {  0, 0, 0, 0, 0, 0, 0, 0 },
-                {  0, 0, 0, 0, 0, 0, 0, 0 },
-                {  0, 0, 0, 0, 0, 0, 0, 0 },
-                {  0, 0, 0, 0, 0, 0, 0, 0 },
-                {  0, 0, 0, 0, 0, 0, 0, 0 },
-                { -5,-2,-3,-8,-9,-3,-2,-5 },
-            };
-
-            // Act
-            var potentialNewPositions = PawnHelper.FindAllLegalMoves(board, player);
+            var potentialNewPositions = KingHelper.FindAllLegalMoves(board, player);
 
             // Assert
             Assert.AreEqual(0, potentialNewPositions.Count);
@@ -49,51 +24,79 @@ namespace DecisionEngineTests
         [TestMethod]
         [DataRow(Player.White)]
         [DataRow(Player.Black)]
-        public void PawnsBlockedTest(Player player)
+        public void e4e5PositionTest(Player player)
         {
             // Arrange
             var board = new int[8, 8]
             {
-                {  1, 1, 1, 1, 1, 1, 1, 1 },
                 {  5, 2, 3, 8, 9, 3, 2, 5 },
+                {  1, 1, 1, 1, 0, 1, 1, 1 },
                 {  0, 0, 0, 0, 0, 0, 0, 0 },
+                {  0, 0, 0, 0, 1, 0, 0, 0 },
+                {  0, 0, 0, 0,-1, 0, 0, 0 },
                 {  0, 0, 0, 0, 0, 0, 0, 0 },
-                {  0, 0, 0, 0, 0, 0, 0, 0 },
-                {  0, 0, 0, 0, 0, 0, 0, 0 },
+                { -1,-1,-1,-1, 0,-1,-1,-1 },
                 { -5,-2,-3,-8,-9,-3,-2,-5 },
-                { -1,-1,-1,-1,-1,-1,-1,-1 },
             };
 
             // Act
-            var potentialNewPositions = PawnHelper.FindAllLegalMoves(board, player);
+            var potentialNewPositions = KingHelper.FindAllLegalMoves(board, player);
 
             // Assert
-            Assert.AreEqual(0, potentialNewPositions.Count);
+            Assert.AreEqual(1, potentialNewPositions.Count);
         }
 
         [TestMethod]
         [DataRow(Player.White)]
         [DataRow(Player.Black)]
-        public void ManyCapturesTest(Player player)
+        public void KingCanCaptureTest(Player player)
         {
             // Arrange
             var board = new int[8, 8]
             {
-                {  5, 2, 3, 8, 9, 3, 2, 5 },
+                {  9, 0, 0, 0, 0, 0, 0, 0 },
+                { -2, 0, 0, 0, 0, 0, 0, 0 },
                 {  0, 0, 0, 0, 0, 0, 0, 0 },
                 {  0, 0, 0, 0, 0, 0, 0, 0 },
-                {  1, 1, 1, 1, 1, 1, 1, 1 },
-                { -1,-1,-1,-1,-1,-1,-1,-1 },
                 {  0, 0, 0, 0, 0, 0, 0, 0 },
                 {  0, 0, 0, 0, 0, 0, 0, 0 },
-                { -5,-2,-3,-8,-9,-3,-2,-5 },
+                {  0, 0, 0, 0, 0, 0, 0, 2 },
+                {  0, 0, 0, 0, 0, 0, 0,-9 },
             };
 
             // Act
-            var potentialNewPositions = PawnHelper.FindAllLegalMoves(board, player);
+            var potentialNewPositions = KingHelper.FindAllLegalMoves(board, player);
 
             // Assert
-            Assert.AreEqual(14, potentialNewPositions.Count);
+            Assert.AreEqual(3, potentialNewPositions.Count);
+        }
+
+
+
+        [TestMethod]
+        [DataRow(Player.White)]
+        [DataRow(Player.Black)]
+        public void KingCantMoveIntoCheckTest(Player player)
+        {
+            // Arrange
+            var board = new int[8, 8]
+            {
+                {  9, 0, 0, 0, 0, 0, 5, 0 },
+                {  0, 0, 0, 0, 0, 0, 0, 0 },
+                {  0, 0, 0, 0, 0, 0, 0, 0 },
+                {  0, 0, 0, 0, 0, 0, 0, 0 },
+                {  0, 0, 0, 0, 0, 0, 0, 0 },
+                {  0, 0, 0, 0, 0, 0, 0, 0 },
+                {  0, 0, 0, 0, 0, 0, 0, 0 },
+                {  0,-5, 0, 0, 0, 0, 0,-9 },
+            };
+
+            // Act
+            var potentialNewPositions = KingHelper.FindAllLegalMoves(board, player);
+            MoveHelper.FilterOutMovesResultingInCheck(potentialNewPositions, player);
+
+            // Assert
+            Assert.AreEqual(1, potentialNewPositions.Count);
         }
     }
 }

@@ -8,13 +8,13 @@ namespace DecisionEngine.Helpers
         {
             var result = new List<int[,]>();
 
-            var queenkValue = player == Player.White ? 8 : -8;
+            var queenValue = player == Player.White ? 8 : -8;
 
             for (var i = 0; i < 8; i++)
             {
                 for (var j = 0; j < 8; j++)
                 {
-                    if (board[i, j] != queenkValue)
+                    if (board[i, j] != queenValue)
                         continue;
 
                     var potentialTargets = RookHelper.GetPotentialMoveSquares(board, new Square(i, j));
@@ -31,7 +31,7 @@ namespace DecisionEngine.Helpers
                         {
                             var newBoard = BoardHelper.DeepCopy(board);
                             newBoard[i, j] = 0;
-                            newBoard[(int)x.Row, (int)x.Column] = queenkValue;
+                            newBoard[(int)x.Row, (int)x.Column] = queenValue;
                             result.Add(newBoard);
                         }
                     }

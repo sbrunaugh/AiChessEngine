@@ -1,12 +1,11 @@
 ﻿using DecisionEngine.Helpers;
-using DecisionEngine.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics;
 using System.Text;
 
 namespace DecisionEngine;
 
-class Program
+public class Program
 {
     static void Main(string[] args)
     {
@@ -39,11 +38,10 @@ class Program
             throw new ArgumentException(nameof(args));
         }
 
-        var legalMoves = FindAllLegalMoves(currentPosition, player);
+        var legalMoves = FindAllLegalMoves(currentPosition, player, true);
 
-        var nnInputFilePath = "C:/Users/bruna/source/repos/SbChessEngine/neuralnetwork/input.csv";
-        var nnForwardPassFilePath = "C:/Users/bruna/source/repos/SbChessEngine/neuralnetwork/forward.py";
-        var nnOutputFilePath = "C:/Users/bruna/source/repos/SbChessEngine/neuralnetwork/output.txt";
+        var nnInputFilePath = "C:/Users/bruna/source/repos/AiChessEngine/neuralnetwork/input.csv";
+        var nnOutputFilePath = "C:/Users/bruna/source/repos/AiChessEngine/neuralnetwork/output.txt";
 
         if (File.Exists(nnInputFilePath))
             File.Delete(nnInputFilePath);
@@ -51,11 +49,19 @@ class Program
         if (File.Exists(nnOutputFilePath))
             File.Delete(nnOutputFilePath);
 
-        using (var sw = new StreamWriter(nnInputFilePath))
+        using (var sw = new StreamWriter(nnInputFilePath, true))
         {
             foreach (var move in legalMoves)
             {
-                sw.WriteLine(SerializePosition(move));
+                try
+                {
+                    var serializedPosition = SerializePosition(move);
+                    sw.WriteLine(serializedPosition);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                }
             }
         }
 
@@ -63,7 +69,7 @@ class Program
         start.FileName = "python";
         start.Arguments = "forward.py";
         start.UseShellExecute = true; // Do not use OS shell.
-        start.WorkingDirectory = "C:/Users/bruna/source/repos/SbChessEngine/neuralnetwork";
+        start.WorkingDirectory = "C:/Users/bruna/source/repos/AiChessEngine/neuralnetwork";
         start.CreateNoWindow = false; // Don't create new window.
         using (Process process = Process.Start(start))
         {
@@ -84,28 +90,14 @@ class Program
 
         Assert.AreEqual(legalMoves.Count, indexedEvaluations.Count);
 
-        int bestMoveIndex = 0;
-        for (var i = 0; i < indexedEvaluations.Count; i++)
-        {
-            var betterCondition = player == Player.White
-                ? indexedEvaluations[i] > indexedEvaluations[bestMoveIndex]
-                : indexedEvaluations[i] < indexedEvaluations[bestMoveIndex];
-
-            // the higher the eval, the better for white
-            if (betterCondition)
-            {
-                Console.WriteLine("Found better move at index " + i + ". " + indexedEvaluations[bestMoveIndex] + "vs. " + indexedEvaluations[i]);
-                bestMoveIndex = i;
-            }
-        }
-
-        var moveName = GenerateMoveName(currentPosition, legalMoves[bestMoveIndex], player);
+        var bestMoveIndex = MoveHelper.PickRandomBestEvaluationIndex(indexedEvaluations, player);
+        var moveName = MoveHelper.GenerateMoveName(currentPosition, legalMoves[bestMoveIndex], player);
 
         Console.WriteLine(moveName + ":");
         Console.WriteLine(SerializePosition(legalMoves[bestMoveIndex], true));
     }
 
-    static List<int[,]> FindAllLegalMoves(int[,] board, Player player)
+    public static List<int[,]> FindAllLegalMoves(int[,] board, Player player, bool includeCheckCheck = false)
     {
         var result = new List<int[,]>();
 
@@ -114,41 +106,15 @@ class Program
         result.AddRange(BishopHelper.FindAllLegalMoves(board, player));
         result.AddRange(RookHelper.FindAllLegalMoves(board, player));
         result.AddRange(QueenHelper.FindAllLegalMoves(board, player));
-        //result.AddRange(FindAllLegalKingMoves(board, player));
+        result.AddRange(KingHelper.FindAllLegalMoves(board, player));
+        result.AddRange(MoveHelper.FindAllLegalCastles(board, player));
+
+        if(includeCheckCheck)
+            MoveHelper.FilterOutMovesResultingInCheck(result, player);
+
+        // TODO: need en peasant and castling through check
 
         return result;
-    }
-
-    private static string GenerateMoveName(int[,] originalPosition, int[,] newPosition, Player player)
-    {
-        var diffs = new List<BoardDifference>();
-
-        for (var i = 0; i < 8; i++)
-        {
-            for (var j = 0; j < 8; j++)
-            {
-                if (originalPosition[i, j] != newPosition[i, j])
-                {
-                    diffs.Add(new BoardDifference(i, j, originalPosition[i, j], newPosition[i, j]));
-                }
-            }
-        }
-
-        if(player == Player.White)
-            diffs.OrderByDescending(d => d.newValue);
-        else
-            diffs.OrderBy(d => d.newValue);
-
-        var sb = new StringBuilder();
-        sb.Append(EnumHelper.PieceToChar((Piece)Math.Abs(diffs[0].newValue)));
-
-        if (diffs[0].originalValue != 0)
-            sb.Append('x');
-
-        sb.Append(EnumHelper.ColumnToChar((Column)diffs[0].j));
-        sb.Append(diffs[0].i + 1);
-
-        return sb.ToString();
     }
 
     private static string SerializePosition(int[,] position, bool readable = false)

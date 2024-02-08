@@ -1,4 +1,6 @@
-﻿namespace DecisionEngine.Helpers
+﻿using DecisionEngine.Models;
+
+namespace DecisionEngine.Helpers
 {
     public static class PawnHelper
     {
@@ -16,24 +18,68 @@
                     if (board[i, j] != pawnValue)
                         continue;
 
-                    var newI = OneRowFoward(i, player);
-                    if (!BoardHelper.IsSquareOccupied(board, newI, j))
+                    var targets = GetPotentialMoveSquares(new Square(i,j), player, i == startingRow);
+                    var captureTargets = GetPotentialCaptureSquares(new Square(i, j), player);
+
+                    foreach (var x in targets)
                     {
-                        var newPosition = BoardHelper.DeepCopy(board);
-                        newPosition[i, j] = 0;
-                        newPosition[newI, j] = pawnValue;
-                        result.Add(newPosition);
+                        if(!BoardHelper.IsSquareOccupied(board, x))
+                        {
+                            var newBoard = BoardHelper.DeepCopy(board);
+                            newBoard[i, j] = 0;
+                            newBoard[(int)x.Row, (int)x.Column] = pawnValue;
+                            result.Add(newBoard);
+                        }
                     }
 
-                    newI = TwoRowsFoward(i, player);
-                    if (i == startingRow && !BoardHelper.IsSquareOccupied(board, newI, j))
+                    foreach (var x in captureTargets)
                     {
-                        var newPosition = BoardHelper.DeepCopy(board);
-                        newPosition[i, j] = 0;
-                        newPosition[newI, j] = pawnValue;
-                        result.Add(newPosition);
+                        var captureCondition = player == Player.White
+                            ? BoardHelper.IntValueAt(board, (int)x.Row, (int)x.Column) < 0
+                            : BoardHelper.IntValueAt(board, (int)x.Row, (int)x.Column) > 0;
+                        
+                        if (captureCondition)
+                        {
+                            var newBoard = BoardHelper.DeepCopy(board);
+                            newBoard[i, j] = 0;
+                            newBoard[(int)x.Row, (int)x.Column] = pawnValue;
+                            result.Add(newBoard);
+                        }
                     }
                 }
+            }
+
+            return result;
+        }
+
+        private static List<Square> GetPotentialMoveSquares(Square square, Player player, bool isStartingRow = false)
+        {
+            var result = new List<Square>();
+            var oneUpSquare = new Square(OneRowFoward((int)square.Row, player), (int)square.Column);
+            result.Add(oneUpSquare);
+
+            if(isStartingRow)
+            {
+                var twoUpSquare = new Square(TwoRowsFoward((int)square.Row, player), (int)square.Column);
+                result.Add(twoUpSquare);
+            }
+
+            return result;
+        }
+
+        private static List<Square> GetPotentialCaptureSquares(Square square, Player player)
+        {
+            var rowMod = player == Player.White ? 1 : -1;
+            var result = new List<Square>();
+
+            if (BoardHelper.AreValidCoords((int)square.Row + rowMod, (int)square.Column - 1))
+            {
+                result.Add(new Square((int)square.Row + rowMod, (int)square.Column - 1));
+            }
+
+            if (BoardHelper.AreValidCoords((int)square.Row + rowMod, (int)square.Column + 1))
+            {
+                result.Add(new Square((int)square.Row + rowMod, (int)square.Column + 1));
             }
 
             return result;
