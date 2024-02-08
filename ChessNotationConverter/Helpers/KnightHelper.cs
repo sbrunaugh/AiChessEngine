@@ -1,6 +1,6 @@
-﻿using ChessAI.Models;
+﻿using ChessNotationConverter.Models;
 
-namespace ChessAI.Helpers
+namespace ChessNotationConverter.Helpers
 {
     internal static class KnightHelper
     {

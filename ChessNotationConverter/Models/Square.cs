@@ -1,4 +1,4 @@
-﻿namespace ChessAI.Models
+﻿namespace ChessNotationConverter.Models
 {
     internal class Square
     {

@@ -1,4 +1,4 @@
-﻿namespace ChessAI
+﻿namespace ChessNotationConverter
 {
     internal enum Player
     {

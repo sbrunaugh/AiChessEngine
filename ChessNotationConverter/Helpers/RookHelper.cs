@@ -1,7 +1,7 @@
-﻿using ChessAI.Models;
+﻿using ChessNotationConverter.Models;
 using System.Data.Common;
 
-namespace ChessAI.Helpers
+namespace ChessNotationConverter.Helpers
 {
     internal static class RookHelper
     {

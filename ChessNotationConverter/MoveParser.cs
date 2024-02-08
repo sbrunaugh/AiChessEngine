@@ -1,8 +1,8 @@
-﻿using ChessAI.Helpers;
-using ChessAI.Models;
+﻿using ChessNotationConverter.Helpers;
+using ChessNotationConverter.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace ChessAI
+namespace ChessNotationConverter
 {
     internal static class MoveParser
     {

@@ -1,6 +1,6 @@
-﻿using ChessAI.Models;
+﻿using ChessNotationConverter.Models;
 
-namespace ChessAI
+namespace ChessNotationConverter
 {
     internal static class Extensions
     {

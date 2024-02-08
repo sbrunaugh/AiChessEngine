@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text;
 
-namespace ChessAI.Models
+namespace ChessNotationConverter.Models
 {
     internal class Position
     {

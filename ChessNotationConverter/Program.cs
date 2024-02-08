@@ -1,7 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 // https://www.chess.com/analysis?tab=analysis
 
-using ChessAI.Models;
+using ChessNotationConverter.Models;
 using System.Text;
 
 const string filePath = "C:\\Users\\bruna\\Downloads\\all_with_filtered_anotations_since1998.txt\\all_with_filtered_anotations_since1998.txt";
