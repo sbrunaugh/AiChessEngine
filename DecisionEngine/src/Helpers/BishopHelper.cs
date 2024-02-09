@@ -4,9 +4,9 @@ namespace DecisionEngine.Helpers
 {
     public static class BishopHelper
     {
-        public static List<int[,]> FindAllLegalMoves(int[,] board, Player player)
+        public static List<Move> FindAllLegalMoves(int[,] board, Player player)
         {
-            var result = new List<int[,]>();
+            var result = new List<Move>();
 
             var bishopValue = player == Player.White ? 3 : -3;
 
@@ -31,7 +31,13 @@ namespace DecisionEngine.Helpers
                             var newBoard = BoardHelper.DeepCopy(board);
                             newBoard[i, j] = 0;
                             newBoard[(int)x.Row, (int)x.Column] = bishopValue;
-                            result.Add(newBoard);
+                            var move = new Move()
+                            {
+                                Player = player,
+                                PriorPosition = board.ToIntArray(),
+                                NewPosition = newBoard.ToIntArray()
+                            };
+                            result.Add(move);
                         }
                     }
                 }

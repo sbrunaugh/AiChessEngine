@@ -1,6 +1,5 @@
 ﻿using DecisionEngine.Helpers;
 using DecisionEngine.Models;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
@@ -48,24 +47,61 @@ public class Program
         {
             var x = new FutureCalculation()
             {
-                Position = BoardHelper.ConvertBoardMatrixToArray(move),
-                NextMoves = new List<EvaluatedMove>()
+                Move = move,
+                FutureEvaluatedMoves = new List<EvaluatedMove>()
             };
 
-            var secondLayer = FindAllLegalMoves(move, enemy, true);
+            var secondLayer = FindAllLegalMoves(x.Move.NewPosition.ToIntMatrix(), enemy, true);
             foreach(var nextMove in secondLayer)
             {
                 var y = new EvaluatedMove()
                 {
-                    Position = BoardHelper.ConvertBoardMatrixToArray(nextMove),
+                    Move = nextMove,
                     Evaluation = 0f
                 };
-                x.NextMoves.Add(y);
+                x.FutureEvaluatedMoves.Add(y);
             }
 
             preCalculations.Add(x);
         }
 
+        var outputText = InvokeNeuralNetwork(preCalculations);
+        var computedCalculations = JsonSerializer.Deserialize<List<FutureCalculation>>(outputText);
+
+        AnalyzeCalculations(computedCalculations);
+
+        // best option for white is the move that results in a set of moves for black where the lowest of
+        // that set is scored as high as possible. Highest of the lowest possibilities.
+        var bestMove = player == Player.White
+            ? computedCalculations.OrderByDescending(cc => cc.MinAndMaxEvals().Item1).First().Move
+            : computedCalculations.OrderBy(cc => cc.MinAndMaxEvals().Item2).First().Move;
+
+        Console.WriteLine(bestMove.MoveName);
+        Console.WriteLine(SerializePosition(bestMove, true));
+    }
+
+    public static List<Move> FindAllLegalMoves(int[,] board, Player player, bool includeCheckCheck = false)
+    {
+        var result = new List<Move>();
+
+        result.AddRange(PawnHelper.FindAllLegalMoves(board, player));
+        result.AddRange(KnightHelper.FindAllLegalMoves(board, player));
+        result.AddRange(BishopHelper.FindAllLegalMoves(board, player));
+        result.AddRange(RookHelper.FindAllLegalMoves(board, player));
+        result.AddRange(QueenHelper.FindAllLegalMoves(board, player));
+        result.AddRange(KingHelper.FindAllLegalMoves(board, player));
+        result.AddRange(MoveHelper.FindAllLegalCastles(board, player));
+
+        if(includeCheckCheck)
+            MoveHelper.FilterOutMovesResultingInCheck(result, player);
+
+        // TODO: need en peasant and castling through check
+
+        return result;
+    }
+
+    private static string InvokeNeuralNetwork(List<FutureCalculation> preCalculations)
+    {
         var nnInputFilePath = "C:/Users/bruna/source/repos/AiChessEngine/neuralnetwork/input.json";
         var nnOutputFilePath = "C:/Users/bruna/source/repos/AiChessEngine/neuralnetwork/output.json";
 
@@ -96,43 +132,19 @@ public class Program
         if (!File.Exists(nnOutputFilePath))
             throw new ApplicationException("python script didn't generate any output file");
 
-        var outputText = File.ReadAllText(nnOutputFilePath);
-        var computedCalculations = JsonSerializer.Deserialize<List<FutureCalculation>>(outputText);
-
-        // best option for white is the move that results in a set of moves for black where the lowest of
-        // that set is scored as high as possible. Highest of the lowest possibilities.
-        var bestMoveForWhite = computedCalculations.OrderByDescending(cc => cc.MinAndMaxEvals().Item1).First();
-        var bestMoveForBlack = computedCalculations.OrderBy(cc => cc.MinAndMaxEvals().Item2).First();
-
-        var chosenPosition = player == Player.White
-            ? BoardHelper.ConvertArrayToBoardMatrix(bestMoveForWhite.Position)
-            : BoardHelper.ConvertArrayToBoardMatrix(bestMoveForBlack.Position);
-
-        Console.WriteLine(MoveHelper.GenerateMoveName(currentPosition, chosenPosition, Player.White));
-        Console.WriteLine(SerializePosition(chosenPosition, true));
+        return File.ReadAllText(nnOutputFilePath);
     }
 
-    public static List<int[,]> FindAllLegalMoves(int[,] board, Player player, bool includeCheckCheck = false)
+    private static void AnalyzeCalculations(List<FutureCalculation> calculations)
     {
-        var result = new List<int[,]>();
-
-        result.AddRange(PawnHelper.FindAllLegalMoves(board, player));
-        result.AddRange(KnightHelper.FindAllLegalMoves(board, player));
-        result.AddRange(BishopHelper.FindAllLegalMoves(board, player));
-        result.AddRange(RookHelper.FindAllLegalMoves(board, player));
-        result.AddRange(QueenHelper.FindAllLegalMoves(board, player));
-        result.AddRange(KingHelper.FindAllLegalMoves(board, player));
-        result.AddRange(MoveHelper.FindAllLegalCastles(board, player));
-
-        if(includeCheckCheck)
-            MoveHelper.FilterOutMovesResultingInCheck(result, player);
-
-        // TODO: need en peasant and castling through check
-
-        return result;
+        Console.WriteLine($"Model saw {calculations.Count} potential moves.");
+        foreach(var calculation in calculations)
+        {
+            Console.WriteLine($"\tMin and Max for {calculation.Move.MoveName}: {calculation.MinAndMaxEvals().Item1}, {calculation.MinAndMaxEvals().Item2}");
+        }
     }
 
-    private static string SerializePosition(int[,] position, bool readable = false)
+    private static string SerializePosition(Move move, bool readable = false)
     {
         var sb = new StringBuilder();
 
@@ -142,18 +154,18 @@ public class Program
             {
                 if(readable)
                 {
-                    if (position[i, j] < 0)
+                    if (move.NewPosition.ToIntMatrix()[i, j] < 0)
                     {
-                        sb.Append(position[i, j] + ",");
+                        sb.Append(move.NewPosition.ToIntMatrix()[i, j] + ",");
                     }
                     else
                     {
-                        sb.Append(" " + position[i, j] + ",");
+                        sb.Append(" " + move.NewPosition.ToIntMatrix()[i, j] + ",");
                     }
                 }
                 else
                 {
-                    sb.Append(position[i, j] + ",");
+                    sb.Append(move.NewPosition.ToIntMatrix()[i, j] + ",");
                 }
             }
 

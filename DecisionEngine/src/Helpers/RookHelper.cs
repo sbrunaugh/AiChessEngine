@@ -4,9 +4,9 @@ namespace DecisionEngine.Helpers
 {
     public static class RookHelper
     {
-        public static List<int[,]> FindAllLegalMoves(int[,] board, Player player)
+        public static List<Move> FindAllLegalMoves(int[,] board, Player player)
         {
-            var result = new List<int[,]>();
+            var result = new List<Move>();
 
             var rookValue = player == Player.White ? 5 : -5;
 
@@ -31,7 +31,13 @@ namespace DecisionEngine.Helpers
                             var newBoard = BoardHelper.DeepCopy(board);
                             newBoard[i, j] = 0;
                             newBoard[(int)x.Row, (int)x.Column] = rookValue;
-                            result.Add(newBoard);
+                            var move = new Move()
+                            {
+                                Player = player,
+                                PriorPosition = board.ToIntArray(),
+                                NewPosition = newBoard.ToIntArray()
+                            };
+                            result.Add(move);
                         }
                     }
                 }

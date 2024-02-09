@@ -2,7 +2,7 @@
 {
     public class EvaluatedMove
     {
-        public int[] Position { get; set; }
+        public Move Move { get; set; }
         public float Evaluation { get; set; }
     }
 }

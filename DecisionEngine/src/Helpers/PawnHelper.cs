@@ -4,9 +4,9 @@ namespace DecisionEngine.Helpers
 {
     public static class PawnHelper
     {
-        public static List<int[,]> FindAllLegalMoves(int[,] board, Player player)
+        public static List<Move> FindAllLegalMoves(int[,] board, Player player)
         {
-            var result = new List<int[,]>();
+            var result = new List<Move>();
 
             var pawnValue = player == Player.White ? 1 : -1;
             var startingRow = player == Player.White ? 1 : 6;
@@ -18,7 +18,7 @@ namespace DecisionEngine.Helpers
                     if (board[i, j] != pawnValue)
                         continue;
 
-                    var targets = GetPotentialMoveSquares(new Square(i,j), player, i == startingRow);
+                    var targets = GetPotentialMoveSquares(board, new Square(i,j), player, i == startingRow);
                     var captureTargets = GetPotentialCaptureSquares(new Square(i, j), player);
 
                     foreach (var x in targets)
@@ -28,7 +28,13 @@ namespace DecisionEngine.Helpers
                             var newBoard = BoardHelper.DeepCopy(board);
                             newBoard[i, j] = 0;
                             newBoard[(int)x.Row, (int)x.Column] = pawnValue;
-                            result.Add(newBoard);
+                            var move = new Move()
+                            {
+                                Player = player,
+                                PriorPosition = board.ToIntArray(),
+                                NewPosition = newBoard.ToIntArray()
+                            };
+                            result.Add(move);
                         }
                     }
 
@@ -43,7 +49,13 @@ namespace DecisionEngine.Helpers
                             var newBoard = BoardHelper.DeepCopy(board);
                             newBoard[i, j] = 0;
                             newBoard[(int)x.Row, (int)x.Column] = pawnValue;
-                            result.Add(newBoard);
+                            var move = new Move()
+                            {
+                                Player = player,
+                                PriorPosition = board.ToIntArray(),
+                                NewPosition = newBoard.ToIntArray()
+                            };
+                            result.Add(move);
                         }
                     }
                 }
@@ -52,13 +64,14 @@ namespace DecisionEngine.Helpers
             return result;
         }
 
-        private static List<Square> GetPotentialMoveSquares(Square square, Player player, bool isStartingRow = false)
+        private static List<Square> GetPotentialMoveSquares(int[,] board, Square square, Player player, bool isStartingRow = false)
         {
             var result = new List<Square>();
             var oneUpSquare = new Square(OneRowFoward((int)square.Row, player), (int)square.Column);
             result.Add(oneUpSquare);
 
-            if(isStartingRow)
+            // Can't jump over other pieces
+            if(isStartingRow && !BoardHelper.IsSquareOccupied(board, oneUpSquare))
             {
                 var twoUpSquare = new Square(TwoRowsFoward((int)square.Row, player), (int)square.Column);
                 result.Add(twoUpSquare);

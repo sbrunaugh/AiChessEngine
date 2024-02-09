@@ -15,9 +15,9 @@ namespace DecisionEngine.Helpers
             [-2, 1]
         ];
 
-        public static List<int[,]> FindAllLegalMoves(int[,] board, Player player)
+        public static List<Move> FindAllLegalMoves(int[,] board, Player player)
         {
-            var result = new List<int[,]>();
+            var result = new List<Move>();
 
             var knightValue = player == Player.White ? 2 : -2;
 
@@ -32,27 +32,22 @@ namespace DecisionEngine.Helpers
 
                     foreach (var x in potentialTargets)
                     {
-                        if(player == Player.White)
+                        var condition = player == Player.White
+                            ? BoardHelper.IntValueAt(board, (int)x.Row, (int)x.Column) <= 0
+                            : BoardHelper.IntValueAt(board, (int)x.Row, (int)x.Column) >= 0;
+
+                        if(condition)
                         {
-                            // If target square is empty or has a black piece
-                            if (BoardHelper.IntValueAt(board, (int)x.Row, (int)x.Column) <= 0)
+                            var newBoard = BoardHelper.DeepCopy(board);
+                            newBoard[i, j] = 0;
+                            newBoard[(int)x.Row, (int)x.Column] = knightValue;
+                            var move = new Move()
                             {
-                                var newBoard = BoardHelper.DeepCopy(board);
-                                newBoard[i, j] = 0;
-                                newBoard[(int)x.Row, (int)x.Column] = knightValue;
-                                result.Add(newBoard);
-                            }
-                        }
-                        else
-                        {
-                            // If target square is empty or has a white piece
-                            if (BoardHelper.IntValueAt(board, (int)x.Row, (int)x.Column) >= 0)
-                            {
-                                var newBoard = BoardHelper.DeepCopy(board);
-                                newBoard[i, j] = 0;
-                                newBoard[(int)x.Row, (int)x.Column] = knightValue;
-                                result.Add(newBoard);
-                            }
+                                Player = player,
+                                PriorPosition = board.ToIntArray(),
+                                NewPosition = newBoard.ToIntArray()
+                            };
+                            result.Add(move);
                         }
                     }
                 }

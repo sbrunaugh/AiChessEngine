@@ -2,6 +2,8 @@ import pandas as pd
 from keras.models import Sequential
 from keras.layers import Dense
 from sklearn.model_selection import KFold
+import linecache
+import random
 
 # Define your model
 model = Sequential()
@@ -11,22 +13,44 @@ model.add(Dense(8, activation='relu', input_dim=16))
 model.add(Dense(1, activation='tanh'))  # Adjusted to output between -1 and 1
 model.compile(optimizer='rmsprop', loss='mean_squared_error')  # Adjusted for regression problem
 
-chunksize = 100000  # Adjust based on your system's memory
-total_rows = 800000
-print(f"Total of {total_rows} in training data.")
-num_chunks = total_rows // chunksize + 1  # Total number of chunks
+training_file = '../train_data.txt'
+total_rows = 21762469
+
+def formulate_chunk(chunk_size):
+    result = []
+    idx = random.randint(1, total_rows)
+    for i in range(chunk_size):
+        line = linecache.getline(training_file, idx).strip()
+        values = line.split(',')
+
+        if(values == None or len(values) != 65):
+            continue
+
+        for i in range(64):
+            values[i] = int(values[i])
+        values[64] = float(values[64])
+        result.append(values)
+        idx += 100
+
+    print(result[0])
+    print(result[1])
+    return result
+
+chunksize = 10000  # Adjust based on your system's memory
 
 # Define the number of splits for the KFold cross-validation
-n_splits = 3
+n_splits = 5
 kf = KFold(n_splits=n_splits)
 
 counter = 1
-for chunk in pd.read_csv('../train_data.txt', chunksize=chunksize):
-    # Separate features and labels
+num_iterations = 20
+while counter < num_iterations:
+    rawChunk = formulate_chunk(chunk_size=chunksize)
+    chunk = pd.DataFrame(rawChunk)
     X = chunk.iloc[:, :-1]  # All columns except the last
     y = chunk.iloc[:, -1]  # Only the last column
 
-    print(f"Performing cross-validation on chunk {counter} of {num_chunks}...")
+    print(f"Performing cross-validation on chunk {counter} of {num_iterations}...")
 
     # Perform cross-validation
     for train_index, test_index in kf.split(X):
@@ -40,7 +64,7 @@ for chunk in pd.read_csv('../train_data.txt', chunksize=chunksize):
         score = model.evaluate(X_test, y_test, verbose=0)
         print(f"Chunk {counter}, Fold {train_index//len(X_train) + 1}, Score: {score}")
 
-    print(f"Finished cross-validation on chunk {counter} of {num_chunks}.")
+    print(f"Finished cross-validation on chunk {counter} of {num_iterations}.")
     counter += 1
 
-model.save('sbrunaugh_chess_model_v3-lite.keras')  # Saves model to disk
+model.save('sbrunaugh_chess_model_v4.keras')  # Saves model to disk

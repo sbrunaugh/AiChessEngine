@@ -2,17 +2,17 @@
 {
     public class FutureCalculation
     {
-        public int[] Position { get; set; }
-        public List<EvaluatedMove> NextMoves { get; set; }
+        public Move Move { get; set; }
+        public List<EvaluatedMove> FutureEvaluatedMoves { get; set; }
         internal (float, float) MinAndMaxEvals()
         {
-            if (NextMoves == null || NextMoves.Count < 1) 
+            if (FutureEvaluatedMoves == null || FutureEvaluatedMoves.Count < 1) 
             { 
-                throw new ArgumentException(nameof(NextMoves));
+                throw new ArgumentException(nameof(FutureEvaluatedMoves));
             }
 
-            var minValue = NextMoves.Min(nm => nm.Evaluation);
-            var maxValue = NextMoves.Max(nm => nm.Evaluation);
+            var minValue = FutureEvaluatedMoves.Min(nm => nm.Evaluation);
+            var maxValue = FutureEvaluatedMoves.Max(nm => nm.Evaluation);
 
             return (minValue, maxValue);
         }

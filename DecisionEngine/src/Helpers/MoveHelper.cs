@@ -5,9 +5,9 @@ namespace DecisionEngine.Helpers
 {
     public static class MoveHelper
     {
-        public static List<int[,]> FindAllLegalCastles(int[,] board, Player player)
+        public static List<Move> FindAllLegalCastles(int[,] board, Player player)
         {
-            var result = new List<int[,]>();
+            var result = new List<Move>();
             var backRank = player == Player.White ? 0 : 7;
             var rookVal = player == Player.White ? 5 : -5;
             var kingVal = player == Player.White ? 9 : -9;
@@ -30,7 +30,13 @@ namespace DecisionEngine.Helpers
                 newBoard[backRank, 2] = kingVal;
                 newBoard[backRank, 3] = rookVal;
                 newBoard[backRank, 4] = 0;
-                result.Add(newBoard);
+                var move = new Move()
+                {
+                    Player = player,
+                    PriorPosition = board.ToIntArray(),
+                    NewPosition = newBoard.ToIntArray()
+                };
+                result.Add(move);
             }
 
             // King side - a side
@@ -49,7 +55,13 @@ namespace DecisionEngine.Helpers
                 newBoard[backRank, 5] = rookVal;
                 newBoard[backRank, 6] = kingVal;
                 newBoard[backRank, 7] = 0;
-                result.Add(newBoard);
+                var move = new Move()
+                {
+                    Player = player,
+                    PriorPosition = board.ToIntArray(),
+                    NewPosition = newBoard.ToIntArray()
+                };
+                result.Add(move);
             }
 
             return result;
@@ -70,57 +82,17 @@ namespace DecisionEngine.Helpers
             return indices[randomIndex];
         } 
 
-        internal static string GenerateMoveName(int[,] originalPosition, int[,] newPosition, Player player)
-        {
-            var diffs = new List<BoardDifference>();
-
-            if (diffs.Count == 4)
-            {
-                if (diffs.Any(d => d.j == (int)Column.a))
-                    return "O-O-O";
-                else
-                    return "O-O";
-            }
-
-            for (var i = 0; i < 8; i++)
-            {
-                for (var j = 0; j < 8; j++)
-                {
-                    if (originalPosition[i, j] != newPosition[i, j])
-                    {
-                        diffs.Add(new BoardDifference(i, j, originalPosition[i, j], newPosition[i, j]));
-                    }
-                }
-            }
-
-            if (player == Player.White)
-                diffs.OrderByDescending(d => d.newValue);
-            else
-                diffs.OrderBy(d => d.newValue);
-
-            var sb = new StringBuilder();
-            sb.Append(EnumHelper.PieceToChar((Piece)Math.Abs(diffs[0].newValue)));
-
-            if (diffs[0].originalValue != 0)
-                sb.Append('x');
-
-            sb.Append(EnumHelper.ColumnToChar((Column)diffs[0].j));
-            sb.Append(diffs[0].i + 1);
-
-            return sb.ToString();
-        }
-
-        public static void FilterOutMovesResultingInCheck(List<int[,]> positions, Player player)
+        public static void FilterOutMovesResultingInCheck(List<Move> moves, Player player)
         {
             var enemy = player == Player.White ? Player.Black : Player.White;
             var kingValue = player == Player.White ? 9 : -9;
             var indecesToRemove = new List<int>();
 
             // Loop through all positions passed in
-            for (var i = 0; i < positions.Count; i++)
+            for (var i = 0; i < moves.Count; i++)
             {
                 // Find every potential move enemy can make (not filtering out checks)
-                var enemeyMoves = Program.FindAllLegalMoves(positions[i], enemy, false);
+                var enemeyMoves = Program.FindAllLegalMoves(moves[i].NewPosition.ToIntMatrix(), enemy, false);
                 var containsCheck = false;
 
                 // Loop through all potential positions after next move
@@ -130,7 +102,7 @@ namespace DecisionEngine.Helpers
                     var isKingPresent = false;
 
                     // Loop through every piece on the board
-                    foreach (int pieceValue in position)
+                    foreach (int pieceValue in position.NewPosition)
                     {
                         if (pieceValue == kingValue)
                             isKingPresent = true; // King was found
@@ -148,7 +120,7 @@ namespace DecisionEngine.Helpers
 
             foreach(var index in indecesToRemove)
             {
-                positions.RemoveAt(index);
+                moves.RemoveAt(index);
             }
         }
     }

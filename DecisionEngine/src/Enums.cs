@@ -70,7 +70,7 @@
                 Piece.Bishop => 'B',
                 Piece.Knight => 'N',
                 Piece.Queen => 'Q',
-                Piece.King => 'N',
+                Piece.King => 'K',
                 _ => ' '
             };
         }

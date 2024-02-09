@@ -4,9 +4,9 @@ namespace DecisionEngine.Helpers
 {
     public static class QueenHelper
     {
-        public static List<int[,]> FindAllLegalMoves(int[,] board, Player player)
+        public static List<Move> FindAllLegalMoves(int[,] board, Player player)
         {
-            var result = new List<int[,]>();
+            var result = new List<Move>();
 
             var queenValue = player == Player.White ? 8 : -8;
 
@@ -32,7 +32,13 @@ namespace DecisionEngine.Helpers
                             var newBoard = BoardHelper.DeepCopy(board);
                             newBoard[i, j] = 0;
                             newBoard[(int)x.Row, (int)x.Column] = queenValue;
-                            result.Add(newBoard);
+                            var move = new Move()
+                            {
+                                Player = player,
+                                PriorPosition = board.ToIntArray(),
+                                NewPosition = newBoard.ToIntArray()
+                            };
+                            result.Add(move);
                         }
                     }
                 }

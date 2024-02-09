@@ -15,9 +15,9 @@ namespace DecisionEngine.Helpers
             [-1, 1]
         ];
 
-        public static List<int[,]> FindAllLegalMoves(int[,] board, Player player)
+        public static List<Move> FindAllLegalMoves(int[,] board, Player player)
         {
-            var result = new List<int[,]>();
+            var result = new List<Move>();
 
             var kingValue = player == Player.White ? 9 : -9;
 
@@ -41,7 +41,13 @@ namespace DecisionEngine.Helpers
                             var newBoard = BoardHelper.DeepCopy(board);
                             newBoard[i, j] = 0;
                             newBoard[(int)square.Row, (int)square.Column] = kingValue;
-                            result.Add(newBoard);
+                            var move = new Move()
+                            {
+                                Player = player,
+                                PriorPosition = board.ToIntArray(),
+                                NewPosition = newBoard.ToIntArray(),
+                            };
+                            result.Add(move);
                         }
                     }
                 } 
