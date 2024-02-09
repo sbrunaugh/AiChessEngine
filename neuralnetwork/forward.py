@@ -3,7 +3,7 @@ from keras.models import load_model
 import numpy as np
 
 # Load the model
-model = load_model('./sbrunaugh_chess_model_v2.keras')
+model = load_model('./sbrunaugh_chess_model_v3.keras')
 
 inputFilePath = './input.csv'
 outputFilePath = './output.txt'

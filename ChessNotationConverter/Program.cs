@@ -83,7 +83,8 @@ using (var file = new StreamReader(filePath))
             evaluations.Clear();
         }
 
-        if (gameCount >= 1000000)
+        // train on only 100,000 games instead of a million
+        if (gameCount >= 100000)
             break;
     }
 }
