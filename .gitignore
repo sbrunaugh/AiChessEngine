@@ -560,3 +560,4 @@ FodyWeavers.xsd
 
 # training data
 *train_data.csv
+*train_data.txt

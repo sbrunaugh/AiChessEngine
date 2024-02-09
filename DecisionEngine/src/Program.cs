@@ -1,7 +1,9 @@
 ﻿using DecisionEngine.Helpers;
+using DecisionEngine.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics;
 using System.Text;
+using System.Text.Json;
 
 namespace DecisionEngine;
 
@@ -40,8 +42,32 @@ public class Program
 
         var legalMoves = FindAllLegalMoves(currentPosition, player, true);
 
-        var nnInputFilePath = "C:/Users/bruna/source/repos/AiChessEngine/neuralnetwork/input.csv";
-        var nnOutputFilePath = "C:/Users/bruna/source/repos/AiChessEngine/neuralnetwork/output.txt";
+        var preCalculations = new List<FutureCalculation>();
+        var enemy = player == Player.White ? Player.Black : Player.White;
+        foreach(var move in legalMoves)
+        {
+            var x = new FutureCalculation()
+            {
+                Position = BoardHelper.ConvertBoardMatrixToArray(move),
+                NextMoves = new List<EvaluatedMove>()
+            };
+
+            var secondLayer = FindAllLegalMoves(move, enemy, true);
+            foreach(var nextMove in secondLayer)
+            {
+                var y = new EvaluatedMove()
+                {
+                    Position = BoardHelper.ConvertBoardMatrixToArray(nextMove),
+                    Evaluation = 0f
+                };
+                x.NextMoves.Add(y);
+            }
+
+            preCalculations.Add(x);
+        }
+
+        var nnInputFilePath = "C:/Users/bruna/source/repos/AiChessEngine/neuralnetwork/input.json";
+        var nnOutputFilePath = "C:/Users/bruna/source/repos/AiChessEngine/neuralnetwork/output.json";
 
         if (File.Exists(nnInputFilePath))
             File.Delete(nnInputFilePath);
@@ -51,18 +77,8 @@ public class Program
 
         using (var sw = new StreamWriter(nnInputFilePath, true))
         {
-            foreach (var move in legalMoves)
-            {
-                try
-                {
-                    var serializedPosition = SerializePosition(move);
-                    sw.WriteLine(serializedPosition);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.ToString());
-                }
-            }
+            var serializedPayload = JsonSerializer.Serialize(preCalculations);
+            sw.WriteLine(serializedPayload);
         }
 
         ProcessStartInfo start = new ProcessStartInfo();
@@ -80,21 +96,20 @@ public class Program
         if (!File.Exists(nnOutputFilePath))
             throw new ApplicationException("python script didn't generate any output file");
 
-        var outputText = File.ReadAllText(nnOutputFilePath).TrimEnd().Split("\r\n");
+        var outputText = File.ReadAllText(nnOutputFilePath);
+        var computedCalculations = JsonSerializer.Deserialize<List<FutureCalculation>>(outputText);
 
-        var indexedEvaluations = new List<float>();
-        foreach(var line in outputText)
-        {
-            indexedEvaluations.Add(float.Parse(line));
-        }
+        // best option for white is the move that results in a set of moves for black where the lowest of
+        // that set is scored as high as possible. Highest of the lowest possibilities.
+        var bestMoveForWhite = computedCalculations.OrderByDescending(cc => cc.MinAndMaxEvals().Item1).First();
+        var bestMoveForBlack = computedCalculations.OrderBy(cc => cc.MinAndMaxEvals().Item2).First();
 
-        Assert.AreEqual(legalMoves.Count, indexedEvaluations.Count);
+        var chosenPosition = player == Player.White
+            ? BoardHelper.ConvertArrayToBoardMatrix(bestMoveForWhite.Position)
+            : BoardHelper.ConvertArrayToBoardMatrix(bestMoveForBlack.Position);
 
-        var bestMoveIndex = MoveHelper.PickRandomBestEvaluationIndex(indexedEvaluations, player);
-        var moveName = MoveHelper.GenerateMoveName(currentPosition, legalMoves[bestMoveIndex], player);
-
-        Console.WriteLine(moveName + ":");
-        Console.WriteLine(SerializePosition(legalMoves[bestMoveIndex], true));
+        Console.WriteLine(MoveHelper.GenerateMoveName(currentPosition, chosenPosition, Player.White));
+        Console.WriteLine(SerializePosition(chosenPosition, true));
     }
 
     public static List<int[,]> FindAllLegalMoves(int[,] board, Player player, bool includeCheckCheck = false)

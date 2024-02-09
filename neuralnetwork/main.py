@@ -12,16 +12,16 @@ model.add(Dense(1, activation='tanh'))  # Adjusted to output between -1 and 1
 model.compile(optimizer='rmsprop', loss='mean_squared_error')  # Adjusted for regression problem
 
 chunksize = 100000  # Adjust based on your system's memory
-total_rows = 8000000
+total_rows = 800000
 print(f"Total of {total_rows} in training data.")
 num_chunks = total_rows // chunksize + 1  # Total number of chunks
 
 # Define the number of splits for the KFold cross-validation
-n_splits = 5
+n_splits = 3
 kf = KFold(n_splits=n_splits)
 
 counter = 1
-for chunk in pd.read_csv('../train_data.csv', chunksize=chunksize):
+for chunk in pd.read_csv('../train_data.txt', chunksize=chunksize):
     # Separate features and labels
     X = chunk.iloc[:, :-1]  # All columns except the last
     y = chunk.iloc[:, -1]  # Only the last column
@@ -43,4 +43,4 @@ for chunk in pd.read_csv('../train_data.csv', chunksize=chunksize):
     print(f"Finished cross-validation on chunk {counter} of {num_chunks}.")
     counter += 1
 
-model.save('sbrunaugh_chess_model_v3.keras')  # Saves model to disk
+model.save('sbrunaugh_chess_model_v3-lite.keras')  # Saves model to disk

@@ -1,25 +1,31 @@
 import os
+import json
 from keras.models import load_model
 import numpy as np
 
 # Load the model
-model = load_model('./sbrunaugh_chess_model_v3.keras')
+model = load_model('./sbrunaugh_chess_model_v3-lite.keras')
 
-inputFilePath = './input.csv'
-outputFilePath = './output.txt'
+inputFilePath = './input.json'
+outputFilePath = './output.json'
 
 if os.path.exists(outputFilePath):
     os.remove(outputFilePath)
 
-# Open the input file and output file
-with open(inputFilePath, 'r') as infile, open(outputFilePath, 'w') as outfile:
-    for line in infile:
-        input_data = np.array(line.strip().split(','), dtype=int).reshape(1, -1)
+data = []
 
-        # Run the forward pass
-        prediction = model.predict(input_data)
+with open(inputFilePath, 'r') as inputJson:
+    data = json.load(inputJson)
+    for futureCalc in data:
+        for nextMove in futureCalc['NextMoves']:
+            model_input = np.array(nextMove['Position'], dtype=int).reshape(1, -1)
 
-        # Write the prediction to the output file
-        outfile.write(f'{prediction[0][0]}\n')
+            # Run the forward pass
+            eval = model.predict(model_input)
+            nextMove['Evaluation'] = float(eval[0][0])
+            print(nextMove['Evaluation'])
 
-print("Index-specific evaluations saved to ", outputFilePath)
+with open(outputFilePath, 'w') as outputJson:
+    json.dump(data, outputJson)
+
+print("JSON data has been written to ", outputFilePath)

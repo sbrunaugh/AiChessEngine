@@ -5,7 +5,7 @@ using ChessNotationConverter;
 using ChessNotationConverter.Models;
 
 const string filePath = "C:\\Users\\bruna\\Downloads\\all_with_filtered_anotations_since1998.txt\\all_with_filtered_anotations_since1998.txt";
-const string outputFilePath = "../../../../train_data.csv";
+const string outputFilePath = "../../../../train_data.txt";
 string line;
 int lineNumber = 0;
 var games = new List<Game>();
@@ -45,11 +45,11 @@ using (var file = new StreamReader(filePath))
             // loop through 1000 games
             foreach (var game in games)
             {
-                if (game.WhiteElo < 2000 && game.BlackElo < 2000)
-                {
-                    gameCount--;
-                    continue;
-                }
+                //if (game.WhiteElo < 2000 && game.BlackElo < 2000)
+                //{
+                //    gameCount--;
+                //    continue;
+                //}
 
                 // loop through all positions
                 for (var i = 1; i < game.Positions.Count; i++)
@@ -83,8 +83,8 @@ using (var file = new StreamReader(filePath))
             evaluations.Clear();
         }
 
-        // train on only 100,000 games instead of a million
-        if (gameCount >= 100000)
+        // convert/evaluate all 3.5 games
+        if (gameCount >= 3500000)
             break;
     }
 }

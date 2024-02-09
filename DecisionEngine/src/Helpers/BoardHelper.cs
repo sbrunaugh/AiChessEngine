@@ -69,5 +69,31 @@ namespace DecisionEngine.Helpers
             }
             return false;
         }
+
+        public static int[] ConvertBoardMatrixToArray(int[,] board)
+        {
+            var result = new List<int>();
+            foreach (var value in board)
+            {
+                result.Add(value);
+            }
+            return result.ToArray();
+        }
+
+        public static int[,] ConvertArrayToBoardMatrix(int[] intArray)
+        {
+            if(intArray.Length != 64)
+                throw new ArgumentException(nameof(intArray));
+
+            var result = GenerateFreshBoard();
+            for (var i = 0; i <8; i++)
+            {
+                for (var j = 0; j < 8; j++)
+                {
+                    result[i, j] = intArray[(i * 8) + j];
+                }
+            }
+            return result;
+        }
     }
 }
