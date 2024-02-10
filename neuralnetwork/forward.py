@@ -11,7 +11,7 @@ print(f"Received string: {args.player}")
 assert(args.player == 'white' or 'black')
 
 # Load the model
-file_path = './sbrunaugh_chess_model_v6_' + args.player + '.keras'
+file_path = './sbrunaugh_chess_model_v7_' + args.player + '.keras'
 model = load_model(file_path)
 
 inputFilePath = './input.json'
