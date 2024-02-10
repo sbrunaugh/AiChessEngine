@@ -41,40 +41,50 @@ public class Program
 
         var legalMoves = FindAllLegalMoves(currentPosition, player, true);
 
-        var preCalculations = new List<FutureCalculation>();
-        var enemy = player == Player.White ? Player.Black : Player.White;
-        foreach(var move in legalMoves)
+        //var preCalculations = new List<FutureCalculation>();
+        //var enemy = player == Player.White ? Player.Black : Player.White;
+        //foreach(var move in legalMoves)
+        //{
+        //    var x = new FutureCalculation()
+        //    {
+        //        Move = move,
+        //        FutureEvaluatedMoves = new List<EvaluatedMove>()
+        //    };
+
+        //    var secondLayer = FindAllLegalMoves(x.Move.NewPosition.ToIntMatrix(), enemy, true);
+        //    foreach(var nextMove in secondLayer)
+        //    {
+        //        var y = new EvaluatedMove()
+        //        {
+        //            Move = nextMove,
+        //            Evaluation = 0f
+        //        };
+        //        x.FutureEvaluatedMoves.Add(y);
+        //    }
+
+        //    preCalculations.Add(x);
+        //}
+
+        var preEvaluatedMoves = new List<EvaluatedMove>();
+        foreach (var move in legalMoves)
         {
-            var x = new FutureCalculation()
+            preEvaluatedMoves.Add(new EvaluatedMove()
             {
-                Move = move,
-                FutureEvaluatedMoves = new List<EvaluatedMove>()
-            };
-
-            var secondLayer = FindAllLegalMoves(x.Move.NewPosition.ToIntMatrix(), enemy, true);
-            foreach(var nextMove in secondLayer)
-            {
-                var y = new EvaluatedMove()
-                {
-                    Move = nextMove,
-                    Evaluation = 0f
-                };
-                x.FutureEvaluatedMoves.Add(y);
-            }
-
-            preCalculations.Add(x);
+                Evaluation = 0f,
+                Move = move
+            });
         }
 
-        var outputText = InvokeNeuralNetwork(preCalculations);
-        var computedCalculations = JsonSerializer.Deserialize<List<FutureCalculation>>(outputText);
+        var evaluatedMoves = InvokeNeuralNetwork(preEvaluatedMoves, player);
+        //var computedCalculations = JsonSerializer.Deserialize<List<FutureCalculation>>(outputText);
 
-        AnalyzeCalculations(computedCalculations);
+        AnalyzeCalculations(evaluatedMoves);
 
         // best option for white is the move that results in a set of moves for black where the lowest of
         // that set is scored as high as possible. Highest of the lowest possibilities.
         var bestMove = player == Player.White
-            ? computedCalculations.OrderByDescending(cc => cc.MinAndMaxEvals().Item1).First().Move
-            : computedCalculations.OrderBy(cc => cc.MinAndMaxEvals().Item2).First().Move;
+            ? evaluatedMoves.OrderByDescending(cc => cc.Evaluation).First().Move
+            : evaluatedMoves.OrderBy(cc => cc.Evaluation).First().Move;
 
         Console.WriteLine(bestMove.MoveName);
         Console.WriteLine(SerializePosition(bestMove, true));
@@ -100,7 +110,7 @@ public class Program
         return result;
     }
 
-    private static string InvokeNeuralNetwork(List<FutureCalculation> preCalculations)
+    private static List<EvaluatedMove> InvokeNeuralNetwork(List<EvaluatedMove> moves, Player player)
     {
         var nnInputFilePath = "C:/Users/bruna/source/repos/AiChessEngine/neuralnetwork/input.json";
         var nnOutputFilePath = "C:/Users/bruna/source/repos/AiChessEngine/neuralnetwork/output.json";
@@ -113,13 +123,15 @@ public class Program
 
         using (var sw = new StreamWriter(nnInputFilePath, true))
         {
-            var serializedPayload = JsonSerializer.Serialize(preCalculations);
+            var serializedPayload = JsonSerializer.Serialize(moves);
             sw.WriteLine(serializedPayload);
         }
 
+        var playerStr = player == Player.White ? "white" : "black";
+
         ProcessStartInfo start = new ProcessStartInfo();
         start.FileName = "python";
-        start.Arguments = "forward.py";
+        start.Arguments = $"forward.py {playerStr}";
         start.UseShellExecute = true; // Do not use OS shell.
         start.WorkingDirectory = "C:/Users/bruna/source/repos/AiChessEngine/neuralnetwork";
         start.CreateNoWindow = false; // Don't create new window.
@@ -132,15 +144,20 @@ public class Program
         if (!File.Exists(nnOutputFilePath))
             throw new ApplicationException("python script didn't generate any output file");
 
-        return File.ReadAllText(nnOutputFilePath);
+        var outputText = File.ReadAllText(nnOutputFilePath);
+        return JsonSerializer.Deserialize<List<EvaluatedMove>>(outputText);
     }
 
-    private static void AnalyzeCalculations(List<FutureCalculation> calculations)
+    private static void AnalyzeCalculations(List<EvaluatedMove> evaluatedMoves)
     {
-        Console.WriteLine($"Model saw {calculations.Count} potential moves.");
-        foreach(var calculation in calculations)
+        evaluatedMoves = evaluatedMoves[0].Move.Player == Player.White
+            ? evaluatedMoves.OrderByDescending(m => m.Evaluation).ToList()
+            : evaluatedMoves.OrderBy(m => m.Evaluation).ToList();
+
+        Console.WriteLine($"Model saw {evaluatedMoves.Count} potential moves.");
+        foreach(var eval in evaluatedMoves)
         {
-            Console.WriteLine($"\tMin and Max for {calculation.Move.MoveName}: {calculation.MinAndMaxEvals().Item1}, {calculation.MinAndMaxEvals().Item2}");
+            Console.WriteLine($"\t{eval.Move.MoveName}: {eval.Evaluation}");
         }
     }
 

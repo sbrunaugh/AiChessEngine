@@ -39,7 +39,7 @@ using (var file = new StreamReader(filePath))
             games.Add(game);
         }
 
-        if (games.Count >= 1)
+        if (games.Count >= 200)
         {
             gameCount += 200;
 
@@ -89,8 +89,8 @@ using (var file = new StreamReader(filePath))
             evaluations.Clear();
         }
 
-        // convert/evaluate all 3.5 games
-        if (gameCount >= 3500000)
+        // convert/evaluate only 100000
+        if (gameCount >= 100000)
             break;
     }
 }

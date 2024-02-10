@@ -13,14 +13,6 @@ namespace DecisionEngine.Models
             {
                 var diffs = new List<BoardDifference>();
 
-                if (diffs.Count == 4)
-                {
-                    if (diffs.Any(d => d.j == (int)Column.a))
-                        return "O-O-O";
-                    else
-                        return "O-O";
-                }
-
                 for (var i = 0; i < 8; i++)
                 {
                     for (var j = 0; j < 8; j++)
@@ -32,10 +24,17 @@ namespace DecisionEngine.Models
                     }
                 }
 
-                if (Player == Player.White)
-                    diffs.OrderByDescending(d => d.newValue);
-                else
-                    diffs.OrderBy(d => d.newValue);
+                if (diffs.Count == 4)
+                {
+                    if (diffs.Any(d => d.j == (int)Column.a))
+                        return "O-O-O";
+                    else
+                        return "O-O";
+                }
+
+                diffs = Player == Player.White
+                    ? diffs.OrderByDescending(d => d.newValue).ToList()
+                    : diffs.OrderBy(d => d.newValue).ToList();
 
                 var sb = new StringBuilder();
                 sb.Append(EnumHelper.PieceToChar((Piece)Math.Abs(diffs[0].newValue)));
