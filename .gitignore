@@ -559,5 +559,5 @@ FodyWeavers.xsd
 *.sln.iml
 
 # training data
-*train_data.csv
-*train_data.txt
+*train_data_white.txt
+*train_data_black.txt

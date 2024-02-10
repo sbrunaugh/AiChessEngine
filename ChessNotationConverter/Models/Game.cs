@@ -12,7 +12,7 @@
 
         // Computed data
         internal List<string> Moves { get; set; }
-        internal List<Position> Positions { get; set; } = new List<Position>() { new Position() };
+        internal List<Position> Positions { get; set; } = new List<Position>();
         
         public Game(string gameText) 
         {
@@ -57,8 +57,21 @@
 
             for (int i = 0; i < Moves.Count; i++)
             {
-                var prev = Positions[i]; // Always one more position than move
-                Positions.Add(new Position(prev, Moves[i]));
+                Position prev;
+                
+                if(i == 0)
+                {
+                    prev = new Position(Player.White);
+                } else
+                {
+                    prev = Positions[i - 1];
+                }
+
+                if (Moves[i][0] != 'W' && Moves[i][0] != 'B')
+                    throw new Exception("Unexcpected character in move string.");
+
+                var playerToMoveNext = Moves[i][0] == 'W' ? Player.Black : Player.White;
+                Positions.Add(new Position(playerToMoveNext, prev, Moves[i]));
             }
 
             //Console.Clear();

@@ -5,7 +5,8 @@ using ChessNotationConverter;
 using ChessNotationConverter.Models;
 
 const string filePath = "C:\\Users\\bruna\\Downloads\\all_with_filtered_anotations_since1998.txt\\all_with_filtered_anotations_since1998.txt";
-const string outputFilePath = "../../../../train_data.txt";
+const string whiteOutFile = "../../../../train_data_white.txt";
+const string blackOutFile = "../../../../train_data_black.txt";
 string line;
 int lineNumber = 0;
 var games = new List<Game>();
@@ -38,21 +39,15 @@ using (var file = new StreamReader(filePath))
             games.Add(game);
         }
 
-        if (games.Count >= 200)
+        if (games.Count >= 1)
         {
             gameCount += 200;
 
             // loop through 1000 games
             foreach (var game in games)
             {
-                //if (game.WhiteElo < 2000 && game.BlackElo < 2000)
-                //{
-                //    gameCount--;
-                //    continue;
-                //}
-
                 // loop through all positions
-                for (var i = 1; i < game.Positions.Count; i++)
+                for (var i = 0; i < game.Positions.Count; i++)
                 {
                     var evaluation = PositionEvaluator.EvaluatePosition(game, i);
                     // if no duplicates in current batch and no matches in known duplicates
@@ -70,12 +65,23 @@ using (var file = new StreamReader(filePath))
 
             games.Clear();
 
-            using (var sw = new StreamWriter(outputFilePath, true))
+            using (var whiteSw = new StreamWriter(whiteOutFile, true))
             {
-                foreach(var evaluation in evaluations)
+                using (var blackSw = new StreamWriter(blackOutFile, true))
                 {
-                    var outputStr = evaluation.Position.Serialize(true) + evaluation.Score;
-                    sw.WriteLine(outputStr);
+                    foreach (var evaluation in evaluations)
+                    {
+                        var outputStr = evaluation.Position.Serialize(true) + evaluation.Score;
+
+                        if(evaluation.Position.WhiteToMove)
+                        {
+                            whiteSw.WriteLine(outputStr);
+                        }
+                        else
+                        {
+                            blackSw.WriteLine(outputStr);
+                        }
+                    }
                 }
             }
 

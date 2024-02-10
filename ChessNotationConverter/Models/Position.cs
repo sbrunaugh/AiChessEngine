@@ -1,14 +1,18 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Text;
+﻿using System.Text;
 
 namespace ChessNotationConverter.Models
 {
     internal class Position
     {
+        private Player player;
+        internal bool WhiteToMove => player == Player.White;
+        internal bool BlackToMove => player == Player.Black;
         internal int[,] Matrix { get; set; }
 
-        public Position()
+        public Position(Player player)
         {
+            this.player = player;
+
             // Starting position
             Matrix = new int[8, 8]
             {
@@ -23,17 +27,14 @@ namespace ChessNotationConverter.Models
                 { -5,-2,-3,-8,-9,-3,-2,-5 },
             };
         }
-        public Position(Position previous, string moveStr)
+        public Position(Player player, Position previous, string moveStr)
         {
+            this.player = player;
             Matrix = previous.MakeMove(moveStr);
         }
 
         public int[,] MakeMove(string moveStr)
         {
-            //Console.Clear();
-            //this.Print();
-            //Console.WriteLine($"\nParsing move {moveStr}.");
-             
             var moveSplit = moveStr.Split(".");
 
             if (moveSplit.Length != 2)
@@ -55,23 +56,6 @@ namespace ChessNotationConverter.Models
 
             var copiedMatrix = DeepCopy(Matrix);
             return MoveParser.ParseMove(copiedMatrix, player, moveType, move);
-        }
-
-        private void Print()
-        {
-            for (var row = 7; row >= 0; row--)
-            {
-                var sb = new StringBuilder();
-                for (var j = 0; j < 8; j++)
-                {
-                    var msg = Matrix[row, j] < 0
-                        ? Matrix[row, j].ToString()
-                        : " " + Matrix[row, j];
-
-                    sb.Append(msg);
-                }
-                Console.WriteLine(sb.ToString());
-            }
         }
 
         private int[,] DeepCopy(int[,] board)
