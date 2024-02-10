@@ -1,11 +1,12 @@
 import pandas as pd
+from tensorflow import keras
 from keras.models import Sequential
 from keras.layers import Dense
 from sklearn.model_selection import KFold
 
 chunksize = 100000  # Adjust based on your system's memory
-total_rows_white = 395657#0
-total_rows_black = 402352#9
+total_rows_white = 3956570
+total_rows_black = 4023529
 
 num_chunks_white = total_rows_white // chunksize + 1  # Total number of chunks
 num_chunks_black = total_rows_white // chunksize + 1  # Total number of chunks
@@ -18,7 +19,8 @@ kf = KFold(n_splits=n_splits)
 
 # Define your model
 model_black = Sequential()
-model_black.add(Dense(64, activation='relu', input_dim=64))
+model_black.add(Dense(128, activation='relu', input_dim=64))
+model_black.add(Dense(128, activation='relu', input_dim=128))
 model_black.add(Dense(64, activation='relu', input_dim=64))
 model_black.add(Dense(32, activation='relu', input_dim=64))
 model_black.add(Dense(16, activation='relu', input_dim=32))
@@ -53,13 +55,14 @@ for chunk in pd.read_csv('../train_data_black.txt', chunksize=chunksize):
     if(counter >= 5):
         break
 
-model_black.save('sbrunaugh_chess_model_v7_black.keras')
+model_black.save('sbrunaugh_chess_model_v8_black.keras')
 
 # --- WHITE ---
 
 # Define your model
 model_white = Sequential()
-model_white.add(Dense(64, activation='relu', input_dim=64))
+model_white.add(Dense(128, activation='relu', input_dim=64))
+model_white.add(Dense(128, activation='relu', input_dim=128))
 model_white.add(Dense(64, activation='relu', input_dim=64))
 model_white.add(Dense(32, activation='relu', input_dim=64))
 model_white.add(Dense(16, activation='relu', input_dim=32))
@@ -94,4 +97,4 @@ for chunk in pd.read_csv('../train_data_white.txt', chunksize=chunksize):
     if(counter >= 5):
         break
 
-model_white.save('sbrunaugh_chess_model_v7_white.keras')
+model_white.save('sbrunaugh_chess_model_v8_white.keras')

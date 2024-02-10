@@ -8,6 +8,7 @@ namespace DecisionEngine;
 
 public class Program
 {
+    private const string workingDir = "C:/Users/sbrunaugh/source/repos/Personal/AiChessEngine/";
     static void Main(string[] args)
     {
         if (args == null || args.Length != 2)
@@ -112,8 +113,8 @@ public class Program
 
     private static List<EvaluatedMove> InvokeNeuralNetwork(List<EvaluatedMove> moves, Player player)
     {
-        var nnInputFilePath = "C:/Users/bruna/source/repos/AiChessEngine/neuralnetwork/input.json";
-        var nnOutputFilePath = "C:/Users/bruna/source/repos/AiChessEngine/neuralnetwork/output.json";
+        var nnInputFilePath = workingDir + "neuralnetwork/input.json";
+        var nnOutputFilePath = workingDir + "neuralnetwork/output.json";
 
         if (File.Exists(nnInputFilePath))
             File.Delete(nnInputFilePath);
@@ -133,7 +134,7 @@ public class Program
         start.FileName = "python";
         start.Arguments = $"forward.py {playerStr}";
         start.UseShellExecute = true; // Do not use OS shell.
-        start.WorkingDirectory = "C:/Users/bruna/source/repos/AiChessEngine/neuralnetwork";
+        start.WorkingDirectory = workingDir + "neuralnetwork";
         start.CreateNoWindow = false; // Don't create new window.
         using (Process process = Process.Start(start))
         {

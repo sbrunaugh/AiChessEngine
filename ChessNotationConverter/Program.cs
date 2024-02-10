@@ -4,7 +4,7 @@
 using ChessNotationConverter;
 using ChessNotationConverter.Models;
 
-const string filePath = "C:\\Users\\bruna\\Downloads\\all_with_filtered_anotations_since1998.txt\\all_with_filtered_anotations_since1998.txt";
+const string filePath = "C:\\Users\\sbrunaugh\\Downloads\\all_with_filtered_anotations_since1998.txt\\all_with_filtered_anotations_since1998.txt";
 const string whiteOutFile = "../../../../train_data_white.txt";
 const string blackOutFile = "../../../../train_data_black.txt";
 string line;
