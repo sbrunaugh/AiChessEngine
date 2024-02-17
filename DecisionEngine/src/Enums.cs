@@ -2,8 +2,8 @@
 {
     public enum Player
     {
-        White,
-        Black
+        Black,
+        White
     }
 
     public enum Piece
@@ -46,6 +46,12 @@
         Capture,
         Castle,
         Promotion
+    }
+
+    public enum EvaluationType
+    {
+        SingleLayer,
+        TwoLayers
     }
 
     public static class EnumHelper
