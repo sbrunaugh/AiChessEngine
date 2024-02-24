@@ -1,17 +1,19 @@
-﻿using System.Text;
+﻿using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace ChessNotationConverter.Models
 {
     internal class Position
     {
-        private Player player;
-        internal bool WhiteToMove => player == Player.White;
-        internal bool BlackToMove => player == Player.Black;
+        private Player playerToMove;
+        internal bool WhiteToMove => playerToMove == Player.White;
+        internal bool BlackToMove => playerToMove == Player.Black;
         internal int[,] Matrix { get; set; }
 
         public Position(Player player)
         {
-            this.player = player;
+            this.playerToMove = player;
 
             // Starting position
             Matrix = new int[8, 8]
@@ -27,9 +29,14 @@ namespace ChessNotationConverter.Models
                 { -5,-2,-3,-8,-9,-3,-2,-5 },
             };
         }
+        public Position(int[,] board, Player player)
+        {
+            playerToMove = player;
+            Matrix = board;
+        }
         public Position(Player player, Position previous, string moveStr)
         {
-            this.player = player;
+            playerToMove = player;
             Matrix = previous.MakeMove(moveStr);
         }
 
@@ -92,6 +99,24 @@ namespace ChessNotationConverter.Models
             }
 
             return trailingComma ? sb.ToString() : sb.ToString().TrimEnd(',');
+        }
+
+        internal Position Invert()
+        {
+            var newPosition = DeepCopy(Matrix);
+
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    if (newPosition[i,j] != 0)
+                    {
+                        newPosition[i,j] = -newPosition[i,j];
+                    }
+                }
+            }
+
+            return new Position(newPosition, playerToMove);
         }
     }
 }

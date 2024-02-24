@@ -6,21 +6,43 @@ namespace ChessNotationConverter
     {
         internal static Evaluation EvaluatePosition(Game game, int positionIndex)
         {
-            float result;
+            var result = (float)0;
 
-            // this assumes white won
-            // using logarithmic function to avoid late-middle game confusion
-            result = 1 - (float)Math.Log(game.MoveCount + 1 - positionIndex) / (float)Math.Log(game.MoveCount + 1);
-
-            if(game.Outcome == -1) 
+            if(game.Outcome == 0)
             {
-                // negate for black
-                result = -result;
+                // for a draw, every move was pretty good
+                result = 0.15f;
             }
-            else if (game.Outcome == 0)
+            else
             {
-                // always 0 for draw - assume no difference in eval for white/black
-                result = 0f;
+                // early game
+                if (positionIndex < 21)
+                {
+                    // If the move was played, we'll say it was good
+                    result = 0.1f;
+                }
+                // middle/end game
+                else
+                {
+                    // this assumes white won
+                    // using logarithmic function to avoid late-middle game confusion
+                    //var numerator = (float)Math.Log(game.MoveCount + 1 - positionIndex);
+                    //var denominator = (float)Math.Log(game.MoveCount + 1);
+                    //result = 1 - numerator / denominator;
+
+                    int adjustedMoveCount = Math.Max(0, game.MoveCount - 20);
+                    int adjustedPositionIndex = Math.Max(0, positionIndex - 20);
+
+                    var numerator = (float)Math.Log(adjustedMoveCount + 1 - adjustedPositionIndex);
+                    var denominator = (float)Math.Log(adjustedMoveCount + 1);
+                    result = 1 - numerator / denominator;
+
+                    if (game.Outcome == -1)
+                    {
+                        // negate for black
+                        result = -result;
+                    }
+                }
             }
 
             return new Evaluation(game.Positions[positionIndex], result);

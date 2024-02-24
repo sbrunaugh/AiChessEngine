@@ -2,8 +2,8 @@
 {
     internal class Evaluation
     {
-        internal Position Position { get; private set; }
-        internal float Score { get; private set; }
+        internal Position Position { get; set; }
+        internal float Score { get; set; }
         internal int Hash { get; }
         internal Evaluation(Position position, float score)
         {

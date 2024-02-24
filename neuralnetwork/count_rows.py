@@ -4,7 +4,5 @@ def count_lines(filename):
     return len(lines)
 
 # Usage
-w_filename = "../train_data_white.txt"
-b_filename = "../train_data_black.txt"
-print(f"The file '{w_filename}' has {count_lines(w_filename)} lines.")
-print(f"The file '{b_filename}' has {count_lines(b_filename)} lines.")
+filename = "../train_data.txt"
+print(f"The file '{filename}' has {count_lines(filename)} lines.")

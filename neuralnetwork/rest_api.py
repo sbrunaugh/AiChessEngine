@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, request
 import ChessModel as cm
 
 app = Flask(__name__)

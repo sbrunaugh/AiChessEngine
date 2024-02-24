@@ -2,11 +2,11 @@
 // https://www.chess.com/analysis?tab=analysis
 
 using ChessNotationConverter;
+using ChessNotationConverter.Helpers;
 using ChessNotationConverter.Models;
 
-const string filePath = "C:\\Users\\sbrunaugh\\Downloads\\all_with_filtered_anotations_since1998.txt\\all_with_filtered_anotations_since1998.txt";
-const string whiteOutFile = "../../../../train_data_white.txt";
-const string blackOutFile = "../../../../train_data_black.txt";
+const string filePath = "../../../../all_with_filtered_anotations_since1998.txt";
+
 string line;
 int lineNumber = 0;
 var games = new List<Game>();
@@ -65,32 +65,14 @@ using (var file = new StreamReader(filePath))
 
             games.Clear();
 
-            using (var whiteSw = new StreamWriter(whiteOutFile, true))
-            {
-                using (var blackSw = new StreamWriter(blackOutFile, true))
-                {
-                    foreach (var evaluation in evaluations)
-                    {
-                        var outputStr = evaluation.Position.Serialize(true) + evaluation.Score;
-
-                        if(evaluation.Position.WhiteToMove)
-                        {
-                            whiteSw.WriteLine(outputStr);
-                        }
-                        else
-                        {
-                            blackSw.WriteLine(outputStr);
-                        }
-                    }
-                }
-            }
+            TrainingDataHelper.WritePositionsToTrainingFile(evaluations);
 
             Console.WriteLine($"Counts: {gameCount} games with {uniquePositions} unique positions written. Discarded {duplicatePositions} duplicate positions.");
             evaluations.Clear();
         }
 
-        // convert/evaluate only 100000
-        if (gameCount >= 100000)
+        // convert/evaluate only 50000
+        if (gameCount >= 50000)
             break;
     }
 }
