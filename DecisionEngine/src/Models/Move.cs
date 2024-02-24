@@ -1,11 +1,15 @@
 ﻿using System.Text;
+using System.Text.Json.Serialization;
 
 namespace DecisionEngine.Models
 {
     public class Move
     {
+        [JsonPropertyName("player")]
         public Player Player { get; set; }
+        [JsonPropertyName("priorPosition")]
         public int[] PriorPosition { get; set; }
+        [JsonPropertyName("newPosition")]
         public int[] NewPosition { get; set; }
         internal string MoveName
         {
@@ -45,7 +49,7 @@ namespace DecisionEngine.Models
                 sb.Append(EnumHelper.ColumnToChar((Column)diffs[0].j));
                 sb.Append(diffs[0].i + 1);
 
-                return sb.ToString();
+                return sb.ToString().TrimStart();
             }
         }
     }
