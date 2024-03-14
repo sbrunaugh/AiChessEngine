@@ -3,7 +3,7 @@ from keras.models import Sequential
 from keras.layers import Dense
 from sklearn.model_selection import KFold
 
-chunksize = 10000  # Adjust based on your system's memory
+chunksize = 50000  # Adjust based on your system's memory
 total_rows = 4075022
 
 num_chunks = total_rows // chunksize + 1  # Total number of chunks
@@ -29,7 +29,7 @@ counter = 1
 for chunk in pd.read_csv('../train_data.txt', chunksize=chunksize):
     # Separate features and labels
     X = chunk.iloc[:, :-1]  # All columns except the last
-    y = chunk.iloc[:, -1] + 0.15  # Only the last column
+    y = chunk.iloc[:, -1] + 0.05  # Only the last column
 
     print(f"Performing cross-validation on chunk {counter} of {num_chunks}...")
 
@@ -39,8 +39,9 @@ for chunk in pd.read_csv('../train_data.txt', chunksize=chunksize):
         X_test = X.iloc[test_index]
         y_test = y.iloc[test_index]
         y_train = y.iloc[train_index]
+        
         # Train your model
-        model.fit(X_train, y_train, epochs=8, batch_size=64)
+        model.fit(X_train, y_train, epochs=10, batch_size=64)
 
         # Evaluate your model
         score = model.evaluate(X_test, y_test, verbose=0)

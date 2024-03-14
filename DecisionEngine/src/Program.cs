@@ -84,14 +84,16 @@ public class Program
 
         var evaluatedMoves = await InvokeNeuralNetwork(preEvaluatedMoves);
 
-        if(modelPlayer == Player.White)
-        {
-            evaluatedMoves = evaluatedMoves.OrderByDescending(m => m.Evaluation).ToList();
-        }
-        else
-        {
-            evaluatedMoves = evaluatedMoves.OrderBy(m => m.Evaluation).ToList();
-        }
+        //if(modelPlayer == Player.White)
+        //{
+        //    evaluatedMoves = evaluatedMoves.OrderByDescending(m => m.Evaluation).ToList();
+        //}
+        //else
+        //{
+        //    evaluatedMoves = evaluatedMoves.OrderBy(m => m.Evaluation).ToList();
+        //}
+
+        evaluatedMoves = evaluatedMoves.OrderByDescending(m => m.Evaluation).ToList();
 
         AnalyzeSingleLayerCalculations(preEvaluatedMoves);
 
