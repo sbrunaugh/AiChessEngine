@@ -71,7 +71,7 @@ using (var file = new StreamReader(filePath))
             evaluations.Clear();
         }
 
-        // convert/evaluate only 50000
+        // convert/evaluate only 50,000
         if (gameCount >= 50000)
             break;
     }

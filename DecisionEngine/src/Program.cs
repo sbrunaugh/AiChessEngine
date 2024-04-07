@@ -84,18 +84,9 @@ public class Program
 
         var evaluatedMoves = await InvokeNeuralNetwork(preEvaluatedMoves);
 
-        //if(modelPlayer == Player.White)
-        //{
-        //    evaluatedMoves = evaluatedMoves.OrderByDescending(m => m.Evaluation).ToList();
-        //}
-        //else
-        //{
-        //    evaluatedMoves = evaluatedMoves.OrderBy(m => m.Evaluation).ToList();
-        //}
-
         evaluatedMoves = evaluatedMoves.OrderByDescending(m => m.Evaluation).ToList();
 
-        AnalyzeSingleLayerCalculations(preEvaluatedMoves);
+        AnalyzeSingleLayerCalculations(evaluatedMoves);
 
         var bestMove = evaluatedMoves.First().Move;
 
@@ -105,20 +96,17 @@ public class Program
 
     private static void AnalyzeSingleLayerCalculations(List<EvaluatedMove> futureCalculations)
     {
-        //var playerStr = futureCalculations[0].Move.Player == Player.White ? "white" : "black";
-        //var enemyStr = playerStr == "white" ? "black" : "white";
+        var playerStr = futureCalculations[0].Move.Player == Player.White ? "white" : "black";
+        var enemyStr = playerStr == "white" ? "black" : "white";
 
-        //Log($"Model (playing as {playerStr}) saw {futureCalculations.Count} potential moves.");
-        //Log($"These are the Min and Max evaluations for {enemyStr}'s follow up moves:");
+        Log($"Model (playing as {playerStr}) saw {futureCalculations.Count} potential moves.");
+        Log($"These are the evaluations:");
 
-        //foreach (var calculation in futureCalculations)
-        //{
-        //    var thisMoveName = calculation.Move.MoveName;
-        //    var minMax = calculation.MinAndMaxEvals();
-        //    var minMoveName = calculation.FutureEvaluatedMoves.First(m => m.Evaluation == minMax.Item1).Move.MoveName;
-        //    var maxMoveName = calculation.FutureEvaluatedMoves.First(m => m.Evaluation == minMax.Item2).Move.MoveName;
-        //    Log($"\t{thisMoveName} | {minMax.Item1} ({minMoveName}) - {minMax.Item2} ({maxMoveName}).");
-        //}
+        foreach (var calculation in futureCalculations)
+        {
+            var thisMoveName = calculation.Move.MoveName;
+            Log($"\t{thisMoveName} | {calculation.Evaluation}");
+        }
     }
 
     public static void EvaluateTwoLayersDeep(int[,] currentPosition, Player modelPlayer)

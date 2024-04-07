@@ -12,8 +12,6 @@ num_chunks = total_rows // chunksize + 1  # Total number of chunks
 n_splits = 5
 kf = KFold(n_splits=n_splits)
 
-# --- WHITE ---
-
 # Define your model
 model = Sequential()
 model.add(Dense(512, activation='relu', input_dim=64))
@@ -49,9 +47,9 @@ for chunk in pd.read_csv('../train_data.txt', chunksize=chunksize):
 
     print(f"Finished cross-validation on chunk {counter} of {num_chunks}.")
     counter += 1
-    model.save('sbrunaugh_chess_model_v13.keras')
+    model.save('sbrunaugh_chess_model_v14.keras')
     if counter >= 8:
         break
 
-model.save('sbrunaugh_chess_model_v13.keras')
+model.save('sbrunaugh_chess_model_v14.keras')
 

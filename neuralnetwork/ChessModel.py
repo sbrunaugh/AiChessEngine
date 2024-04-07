@@ -2,7 +2,7 @@ from keras.models import load_model
 import numpy as np
 
 class ChessModel:
-    file_path = './sbrunaugh_chess_model_v13.keras'
+    file_path = './sbrunaugh_chess_model_v14.keras'
 
     def __init__(self) -> None:
         self.model = load_model(self.file_path)
